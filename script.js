@@ -1,9 +1,10 @@
 const players = [
-  { playerName: "playerOne", playerToken: "O" },
-  { playerName: "playerTwo", playerToken: "X" },
+  { playerName: "player One", playerToken: "O" },
+  { playerName: "player Two", playerToken: "X" },
 ];
 // initialization of player
 let activePlayer = players[0];
+let noOfTurns = 0;
 
 const GameBoard = (function () {
   let gameBoard = [];
@@ -52,6 +53,7 @@ const GameBoard = (function () {
       gameBoard[selectedCellIndices.row][selectedCellIndices.column].getToken()
     );*/
     putTokenFromGameBoardToScreen(selectedCellIndices);
+    noOfTurns++;
   };
 
   function putTokenFromGameBoardToScreen(selectedCellIndices) {
@@ -74,17 +76,100 @@ const GameBoard = (function () {
   }
   return { getBoard, addTokenToGameBoard };
 })();
-
-const DisplayController = (() => {
+let result;
+const DisplayController = () => {
   function returnPosition(target) {
+    if (result) return;
     let row = target.getAttribute("data-row-number");
     let column = target.getAttribute("data-column-number");
     let selectedCellIndices = { row, column };
-    Game(selectedCellIndices);
+    result = GameLogic(selectedCellIndices);
   }
-  return { returnPosition };
-})();
+  function displayResult(result) {
+    const resultContainer = document.querySelector(".resultContainer");
+    if (result !== "Tie") {
+      resultContainer.textContent = `${result.playerName} with token: (${result.playerToken}) won the match!`;
+    } else {
+      resultContainer.textContent = "Match ends at tie";
+    }
+  }
+  return { returnPosition, displayResult };
+};
 
-const Game = (selectedCellIndices) => {
+const GameLogic = (selectedCellIndices) => {
   GameBoard.addTokenToGameBoard(activePlayer, selectedCellIndices);
+  let board = GameBoard.getBoard();
+  let result = returnWinnerObjectOrTie(board);
+  function returnWinnerObjectOrTie(board) {
+    const playerOneToken = players[0].playerToken;
+    const playerTwoToken = players[1].playerToken;
+    // check in rows
+    for (row = 0; row < 3; row++) {
+      if (
+        board[row][0].getToken() === playerOneToken &&
+        board[row][1].getToken() === playerOneToken &&
+        board[row][2].getToken() === playerOneToken
+      ) {
+        return players[0];
+      }
+      if (
+        board[row][0].getToken() === playerTwoToken &&
+        board[row][1].getToken() === playerTwoToken &&
+        board[row][2].getToken() === playerTwoToken
+      ) {
+        return players[1];
+      }
+    }
+    // check in columns
+    for (column = 0; column < 3; column++) {
+      if (
+        board[0][column].getToken() === playerOneToken &&
+        board[1][column].getToken() === playerOneToken &&
+        board[2][column].getToken() === playerOneToken
+      ) {
+        return players[0];
+      }
+      if (
+        board[0][column].getToken() === playerTwoToken &&
+        board[1][column].getToken() === playerTwoToken &&
+        board[2][column].getToken() === playerTwoToken
+      ) {
+        return players[1];
+      }
+    }
+    // check in diagonal cells
+    if (
+      board[0][0].getToken() === playerOneToken &&
+      board[1][1].getToken() === playerOneToken &&
+      board[2][2].getToken() === playerOneToken
+    ) {
+      return players[0];
+    }
+    if (
+      board[0][0].getToken() === playerTwoToken &&
+      board[1][1].getToken() === playerTwoToken &&
+      board[2][2].getToken() === playerTwoToken
+    ) {
+      return players[1];
+    }
+    if (
+      board[0][2].getToken() === playerOneToken &&
+      board[1][1].getToken() === playerOneToken &&
+      board[2][0].getToken() === playerOneToken
+    ) {
+      return players[0];
+    }
+    if (
+      board[0][2].getToken() === playerTwoToken &&
+      board[1][1].getToken() === playerTwoToken &&
+      board[2][0].getToken() === playerTwoToken
+    ) {
+      return players[1];
+    }
+    if (noOfTurns === 9) return "Tie";
+  }
+  if (result) {
+    DisplayController().displayResult(result);
+  }
+  return result;
 };
