@@ -93,7 +93,11 @@ const DisplayController = () => {
       resultContainer.textContent = "Match ends at tie";
     }
   }
-  return { returnPosition, displayResult };
+  // refresh the page to restart the game
+  function restartGame() {
+    location.reload(); // this method is used to refresh the web page
+  }
+  return { returnPosition, displayResult, restartGame };
 };
 
 const GameLogic = (selectedCellIndices) => {
